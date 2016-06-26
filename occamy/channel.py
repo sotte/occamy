@@ -109,7 +109,7 @@ class Channel:
 
     def _join_timeout():
         with self._lock:
-            if self._state != Channel.STATES['joining']:
+            if not self._is_joining():
                 return
             self._logger.debug("channel timeout ({timeout}) on topic {topic}".format(timeout=self._join_push.timeout(), topic=self._topic))
             self._state = Channel.STATES['errored']
@@ -128,7 +128,7 @@ class Channel:
             self._rejoin_timer.start()
 
     def _can_push(self):
-        return self._socket.is_connected() and self._state == Channel.STATES['joined']
+        return self._socket.is_connected() and self._is_joined()
 
     def _on_message(self, event, payload, ref):
         pass
@@ -146,4 +146,18 @@ class Channel:
         
     def reply_event_name(self, ref):
         return "chan_reply_{ref}".format(ref=ref)
-        
+
+    def _is_closed(self):
+        return self._state == Channel.STATES["closed"]
+
+    def _is_errored(self):
+        return self._state == Channel.STATES["errored"]
+
+    def _is_joined(self):
+        return self._state == Channel.STATES["joined"]
+
+    def _is_joining(self):
+        return self._state == Channel.STATES["joining"]
+
+    def _is_leaving(self):
+        return self._state == Channel.STATES["leaving"]
