@@ -4,15 +4,15 @@ from .push import Push
 
 
 class Channel:
-    STATES = dict(closed = "closed",
-                  errored = "errored",
-                  joined = "joined",
-                  joining = "joining")
-    EVENTS = dict(close = 'phx_close',
-                  error = 'phx_error',
-                  join = 'phx_join',
-                  reply = 'phx_reply',
-                  leave = 'phx_leave')
+    STATES = dict(closed="closed",
+                  errored="errored",
+                  joined="joined",
+                  joining="joining")
+    EVENTS = dict(close='phx_close',
+                  error='phx_error',
+                  join='phx_join',
+                  reply='phx_reply',
+                  leave='phx_leave')
 
     def __init__(self, topic, params, socket):
         self._lock = Lock()
@@ -24,23 +24,27 @@ class Channel:
         self._bindings = []
         self._timeout = self._socket.timeout()
         self._joined_once = False
-        self._join_push = Push(self, Channel.EVENTS['join'], self._params, self._timeout)
+        self._join_push = Push(self, Channel.EVENTS['join'], self._params,
+                               self._timeout)
         self._push_buffer = []
 
-        self._rejoin_timer = Timer(self._socket.reconnect_after_ms(), self._rejoin_until_connected)
+        self._rejoin_timer = Timer(self._socket.reconnect_after_ms(),
+                                   self._rejoin_until_connected)
         self._join_push.receive("ok", self._joined)
         self._join_push.receive("timeout", self._join_timeout)
 
         self.on_close(self._closed)
         self.on_error(self._errored)
 
-        self.on(Channel.EVENTS['reply'], lambda payload, ref: self.trigger(self.reply_event_name(ref), payload))
+        self.on(Channel.EVENTS['reply'], lambda payload, ref: self.trigger(
+            self.reply_event_name(ref), payload))
 
     def join(self, timeout=None):
         with self._lock:
             timeout = timeout or self._timeout
             if self._joined_once:
-                raise RuntimeError("'join' can only be called a single time per channel instance")
+                raise RuntimeError(
+                    "'join' can only be called a single time per channel instance")
             else:
                 self._joined_once = True
             self._rejoin(timeout)
@@ -78,7 +82,8 @@ class Channel:
         timeout = timeout or self._timeout
 
         def on_close():
-            self._logger.debug("channel leave {topic}".format(topic=self._topic))
+            self._logger.debug(
+                "channel leave {topic}".format(topic=self._topic))
             self.trigger(Channel.EVENTS['close'], "leave")
 
         push = Push(self, Channel.EVENTS['leave'], {}, timeout)
@@ -114,19 +119,23 @@ class Channel:
         with self._lock:
             if not self._is_joining():
                 return
-            self._logger.debug("channel timeout ({timeout}) on topic {topic}".format(timeout=self._join_push.timeout(), topic=self._topic))
+            self._logger.debug(
+                "channel timeout ({timeout}) on topic {topic}"
+                .format(timeout=self._join_push.timeout(), topic=self._topic))
             self._state = Channel.STATES['errored']
             self._rejoin_timer.start()
 
     def _closed(self):
         with self._lock:
-            self._logger.debug("channel close {topic}".format(topic=self._topic))
+            self._logger.debug(
+                "channel close {topic}".format(topic=self._topic))
             self._state = Channel.STATES['closed']
             self._socket.remove(self)
 
     def _errored(self, reason):
         with self._lock:
-            self._logger.debug("channel error {topic}, reason {reason}".format(topic=self._topic, reason=reason))
+            self._logger.debug("channel error {topic}, reason {reason}"
+                               .format(topic=self._topic, reason=reason))
             self._state = Channel.STATES['errored']
             self._rejoin_timer.start()
 
