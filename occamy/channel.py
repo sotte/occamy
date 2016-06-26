@@ -131,7 +131,15 @@ class Channel:
         return self._socket.is_connected() and self._state == Channel.STATES['joined']
 
     def _on_message(self, event, payload, ref):
-        pass
+        """
+        Overridable message hook.
+
+        Receives all events for specialized message handling before dispatching
+        to the channel callbacks.
+
+        Must return the payload, modified or unmodified.
+        """
+        return payload
 
     def _rejoin(self, timeout):
         timeout = timeout or self._timeout
