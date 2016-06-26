@@ -6,7 +6,7 @@ class Channel:
     STATES = dict(closed = "closed",
                   errored = "errored",
                   joined = "joined",
-                  joining = "joinging")
+                  joining = "joining")
     EVENTS = dict(close = 'phx_close',
                   error = 'phx_error',
                   join = 'phx_join',
