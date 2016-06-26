@@ -223,4 +223,4 @@ class Socket(WebSocketObserver):
         elif uri[1] == '/':
             return protocol + ":" + uri
         else:
-            raise RuntimeError, "expected endpoint to include domain"
+            raise RuntimeError("expected endpoint to include domain")

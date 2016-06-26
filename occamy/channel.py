@@ -40,7 +40,7 @@ class Channel:
         with self._lock:
             timeout = timeout or self._timeout
             if self._joined_once:
-                raise RuntimeError, "'join' can only be called a single time per channel instance"
+                raise RuntimeError("'join' can only be called a single time per channel instance")
             else:
                 self._joined_once = True
             self._rejoin(timeout)
@@ -64,7 +64,9 @@ class Channel:
     def push(self, event, payload, timeout=None):
         timeout = timeout or self._timeout
         if not self._joined_once:
-            raise RuntimeError, "tried to push '{event}' to '{topic}' before joining".format(event=event, topic=self._topic)
+            raise RuntimeError(
+                "tried to push '{event}' to '{topic}' before joining"
+                .format(event=event, topic=self._topic))
         push = Push(self, event, payload, timeout)
         if self._can_push():
             push.send()
