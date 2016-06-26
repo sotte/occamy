@@ -1,6 +1,6 @@
 import logging
 from threading import Lock, Timer
-from push import Push
+from .push import Push
 
 
 class Channel:

@@ -1,10 +1,11 @@
 import logging
 import urllib
 import json
-from occamy.channel import Channel
 from threading import Lock
-from repeated_timer import RepeatedTimer
 from ws4py.client.threadedclient import WebSocketClient
+
+from .channel import Channel
+from .repeated_timer import RepeatedTimer
 
 
 class WebSocketObserver:
