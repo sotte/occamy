@@ -12,6 +12,7 @@ from .repeated_timer import RepeatedTimer
 
 
 class WebSocketObserver:
+
     def opened(self):
         pass
 
@@ -26,6 +27,7 @@ class WebSocketObserver:
 
 
 class WebSocketImpl(WebSocketClient):
+
     def __init__(self, observers=[], *args, **kwargs):
         super(WebSocketImpl, self).__init__(*args, **kwargs)
         self._observers = observers
@@ -68,10 +70,10 @@ class WebSocketImpl(WebSocketClient):
 
 
 class Socket(WebSocketObserver):
-    DEFAULT_TIMEOUT_MS    = 10000
+    DEFAULT_TIMEOUT_MS = 10000
     HEARTBEAT_INTERVAL_MS = 30000
-    RECONNECT_AFTER_MS    = 5000
-    VSN                   = "1.0.0"
+    RECONNECT_AFTER_MS = 5000
+    VSN = "1.0.0"
 
     def __init__(self,
                  endpoint,
@@ -79,7 +81,8 @@ class Socket(WebSocketObserver):
                  timeout=DEFAULT_TIMEOUT_MS,
                  heartbeat_interval_ms=HEARTBEAT_INTERVAL_MS,
                  reconnect_after_ms=None):
-        self._endpoint_url = Socket._endpoint_url("{endpoint}/websocket".format(endpoint=endpoint), params)
+        self._endpoint_url = Socket._endpoint_url(
+            "{endpoint}/websocket".format(endpoint=endpoint), params)
         self._websocket_impl = WebSocketImpl([self], self._endpoint_url)
         self._logger = logging.getLogger()
         self._timeout = timeout
@@ -88,13 +91,16 @@ class Socket(WebSocketObserver):
         self._channels = []
         self._send_buffer = []
         self._ref = 0
-        self._heartbeat_timer = RepeatedTimer(heartbeat_interval_ms, self._send_heartbeat)
+        self._heartbeat_timer = RepeatedTimer(
+            heartbeat_interval_ms, self._send_heartbeat)
         self._reconnect_after_ms = reconnect_after_ms or Socket._reconnect_after_ms
-        self._reconnect_timer = RepeatedTimer(self._reconnect_after_ms, self._reconnect)
+        self._reconnect_timer = RepeatedTimer(
+            self._reconnect_after_ms, self._reconnect)
 
     # Observer API
     def opened(self):
-        self._logger.debug("transport connected to {url}".format(url=self._endpoint_url))
+        self._logger.debug(
+            "transport connected to {url}".format(url=self._endpoint_url))
         with self._lock:
             self._opened = True
             self._reconnect_timer.cancel()
@@ -102,7 +108,8 @@ class Socket(WebSocketObserver):
             self._flush_send_buffer_locked()
 
     def closed(self, code, reason):
-        self._logger.debug("transport closed with {code}, reason {reason}".format(code=code, reason=reason))
+        self._logger.debug("transport closed with {code}, reason {reason}".format(
+            code=code, reason=reason))
         channels = []
         with self._lock:
             self._opened = False
@@ -152,7 +159,7 @@ class Socket(WebSocketObserver):
         return self._timeout
 
     def is_connected(self):
-        return self._opened == True
+        return self._opened
 
     def connect(self):
         self._websocket_impl.connect()
@@ -208,7 +215,8 @@ class Socket(WebSocketObserver):
             self._websocket_impl.connect()
 
     def _send_heartbeat(self):
-        self.push(dict(topic="phoenix", event="heartbeat", payload={}, ref=self.make_ref()))
+        self.push(dict(topic="phoenix", event="heartbeat",
+                       payload={}, ref=self.make_ref()))
 
     @staticmethod
     def _reconnect_after_ms(timeouts):
@@ -220,7 +228,7 @@ class Socket(WebSocketObserver):
     @staticmethod
     def _endpoint_url(endpoint, params, protocol='wss'):
         params = params.copy()
-        params.update(dict(vsn = Socket.VSN))
+        params.update(dict(vsn=Socket.VSN))
         prefix = '&' if '?' in endpoint else '?'
         uri = endpoint + prefix + urlencode(params)
         if uri[0] != '/':
