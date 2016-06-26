@@ -1,5 +1,8 @@
 import logging
-import urllib
+try:  # py2
+    from urllib import urlencode
+except:  # py3
+    from urllib.parse import urlencode
 import json
 from threading import Lock
 from ws4py.client.threadedclient import WebSocketClient
@@ -218,7 +221,7 @@ class Socket(WebSocketObserver):
         params = params.copy()
         params.update(dict(vsn = Socket.VSN))
         prefix = '&' if '?' in endpoint else '?'
-        uri = endpoint + prefix + urllib.urlencode(params)
+        uri = endpoint + prefix + urlencode(params)
         if uri[0] != '/':
             return uri
         elif uri[1] == '/':
