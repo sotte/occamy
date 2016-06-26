@@ -76,7 +76,7 @@ class Push:
             self._timer.cancel()
             self._timer = None
             self._received_resp = payload
-            hooks = [h for h in self._recv_hook if h['status'] == status]
+            hooks = [h for h in self._recv_hooks if h['status'] == status]
 
         for hook in map(lambda hook: hook['callback'], hooks):
             hook(response)
