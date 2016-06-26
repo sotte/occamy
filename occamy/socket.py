@@ -32,7 +32,7 @@ class WebSocketImpl(WebSocketClient):
 
     def remove_observer(self, observer):
         with self._lock:
-            self._observers = filter(lambda o: o != observer, self._observers)
+            self._observers = [o for o in self._observers if o != observer]
 
     def remove_observers(self):
         observers = []
@@ -125,7 +125,7 @@ class Socket(WebSocketObserver):
 
         channels = []
         with self._lock:
-            channels = filter(lambda ch: ch.is_member(topic), self._channels)
+            channels = [ch for ch in self._channels if ch.is_member(topic)]
 
         for channel in channels:
             channel.trigger(event, payload, ref)
@@ -144,19 +144,20 @@ class Socket(WebSocketObserver):
 
     def timeout(self):
         return self._timeout
-    
+
     def is_connected(self):
         return self._opened == True
 
     def connect(self):
         self._websocket_impl.connect()
-    
+
     def disconnect(self, callback=None, code=1000, reason=''):
         self._websocket_impl.close(code, reason)
 
     def remove(self, channel):
         with self._lock:
-            self._channels = filter(lambda ch: not ch.is_member(channel.topic), self._channels)
+            self._channels = [ch for ch in self._channels
+                              if not ch.is_member(channel.topic)]
 
     def channel(self, topic, params):
         channel = Channel(topic, params, self)
