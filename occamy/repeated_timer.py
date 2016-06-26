@@ -1,15 +1,17 @@
 from threading import Lock, Timer
 
+
 class RepeatedTimer(object):
+
     def __init__(self, timeout_ms, function, *args, **kwargs):
-        self._timer      = None
+        self._timer = None
         self._timeout_ms = timeout_ms
-        self._function   = function
-        self._args       = args
-        self._kwargs     = kwargs
+        self._function = function
+        self._args = args
+        self._kwargs = kwargs
         self._is_running = False
-        self._timeouts   = 0
-        self._lock       = Lock()
+        self._timeouts = 0
+        self._lock = Lock()
 
     def _run(self):
         with self._lock:
@@ -27,7 +29,7 @@ class RepeatedTimer(object):
             # http://bugs.python.org/issue21963
             self._timer.daemon = True
             self._timer.start()
-            
+
     def start(self):
         with self._lock:
             self._start_locked()
@@ -44,5 +46,3 @@ class RepeatedTimer(object):
             return self._timeout_ms(self._timeouts) / 1000.0
         else:
             return self._timeout_ms / 1000.0
-        
-            
