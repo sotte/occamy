@@ -1,8 +1,9 @@
 import logging
-import functools
 from threading import Lock, Timer
 
+
 class Push:
+
     def __init__(self, channel, event, payload, timeout):
         self._lock = Lock()
         self._logger = logging.getLogger()
@@ -88,12 +89,12 @@ class Push:
         self._ref_event = self._channel.reply_event_name(self._ref)
         self._channel.on(self._ref_event, self._received_response)
         self._timer = Timer(self._timeout, self._timed_out)
-            
+
     def _timed_out(self):
         with self._lock:
             self._timer = None
         self.trigger("timeout", {})
-    
+
     def _cancel_ref_event(self):
         if not self._ref_event:
             return
