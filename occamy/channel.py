@@ -56,7 +56,7 @@ class Channel:
         self._bindings.append(dict(event=event, callback=cb))
 
     def off(self, event):
-        self._bindings = filter(lambda binding: binding['event'] != event, self._bindings)
+        self._bindings = [b for b in self._bindings if b['event'] != event]
 
     def is_member(self, topic):
         return self._topic == topic
@@ -151,7 +151,7 @@ class Channel:
 
     def trigger(self, event, payload=None, ref=None):
         self._on_message(event, payload, ref)
-        bindings = filter(lambda binding: binding['event'] == event, self._bindings)
+        bindings = [b for b in self._bindings if b['event'] == event]
         for binding in bindings:
             binding['callback'](payload, ref)
 
