@@ -1,6 +1,7 @@
 import logging
 from threading import Lock, Timer
-from push import Push
+from .push import Push
+
 
 class Channel:
     STATES = dict(closed = "closed",
@@ -39,7 +40,7 @@ class Channel:
         with self._lock:
             timeout = timeout or self._timeout
             if self._joined_once:
-                raise RuntimeError, "'join' can only be called a single time per channel instance"
+                raise RuntimeError("'join' can only be called a single time per channel instance")
             else:
                 self._joined_once = True
             self._rejoin(timeout)
@@ -63,7 +64,9 @@ class Channel:
     def push(self, event, payload, timeout=None):
         timeout = timeout or self._timeout
         if not self._joined_once:
-            raise RuntimeError, "tried to push '{event}' to '{topic}' before joining".format(event=event, topic=self._topic)
+            raise RuntimeError(
+                "tried to push '{event}' to '{topic}' before joining"
+                .format(event=event, topic=self._topic))
         push = Push(self, event, payload, timeout)
         if self._can_push():
             push.send()
@@ -93,7 +96,7 @@ class Channel:
 
     def topic(self):
         return self._topic
-    
+
     def _rejoin_until_connected(self):
         with self._lock:
             if self._socket.is_connected():
@@ -143,7 +146,6 @@ class Channel:
         bindings = filter(lambda binding: binding['event'] == event, self._bindings)
         for binding in bindings:
             binding['callback'](payload, ref)
-        
+
     def reply_event_name(self, ref):
         return "chan_reply_{ref}".format(ref=ref)
-        

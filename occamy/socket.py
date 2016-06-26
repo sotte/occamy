@@ -1,11 +1,15 @@
 import logging
-import urllib
-import re
+try:  # py2
+    from urllib import urlencode
+except:  # py3
+    from urllib.parse import urlencode
 import json
-from occamy.channel import Channel
 from threading import Lock
-from repeated_timer import RepeatedTimer
 from ws4py.client.threadedclient import WebSocketClient
+
+from .channel import Channel
+from .repeated_timer import RepeatedTimer
+
 
 class WebSocketObserver:
     def opened(self):
@@ -19,6 +23,7 @@ class WebSocketObserver:
 
     def unhandled_error(self, error):
         pass
+
 
 class WebSocketImpl(WebSocketClient):
     def __init__(self, observers=[], *args, **kwargs):
@@ -40,7 +45,7 @@ class WebSocketImpl(WebSocketClient):
             observers = self._observers
             self._observers = []
         return observers
-            
+
     def opened(self):
         for observer in self._get_observers():
             observer.opened()
@@ -60,7 +65,8 @@ class WebSocketImpl(WebSocketClient):
     def _get_observers(self):
         with self._lock:
             return self._observers[:]
-                
+
+
 class Socket(WebSocketObserver):
     DEFAULT_TIMEOUT_MS    = 10000
     HEARTBEAT_INTERVAL_MS = 30000
@@ -144,13 +150,13 @@ class Socket(WebSocketObserver):
 
     def timeout(self):
         return self._timeout
-    
+
     def is_connected(self):
         return self._opened == True
 
     def connect(self):
         self._websocket_impl.connect()
-    
+
     def disconnect(self, callback=None, code=1000, reason=''):
         self._websocket_impl.close(code, reason)
 
@@ -178,7 +184,7 @@ class Socket(WebSocketObserver):
 
     def off(self, observer):
         self._websocket_impl.remove_observer(observer)
-        
+
     def make_ref(self):
         with self._lock:
             self._ref += 1
@@ -193,7 +199,7 @@ class Socket(WebSocketObserver):
             return True
         else:
             return False
-                
+
     def _reconnect(self):
         with self._lock:
             observers = self._websocket_impl.remove_observers()
@@ -202,28 +208,23 @@ class Socket(WebSocketObserver):
 
     def _send_heartbeat(self):
         self.push(dict(topic="phoenix", event="heartbeat", payload={}, ref=self.make_ref()))
-    
+
     @staticmethod
     def _reconnect_after_ms(timeouts):
         try:
             return [1000, 2000, 5000, 10000][timeouts]
         except:
             return 10000
-            
+
     @staticmethod
     def _endpoint_url(endpoint, params, protocol='wss'):
         params = params.copy()
         params.update(dict(vsn = Socket.VSN))
         prefix = '&' if '?' in endpoint else '?'
-        uri = endpoint + prefix + urllib.urlencode(params)
+        uri = endpoint + prefix + urlencode(params)
         if uri[0] != '/':
             return uri
         elif uri[1] == '/':
             return protocol + ":" + uri
         else:
-            raise RuntimeError, "expected endpoint to include domain"
-
-    
-    
-    
-    
+            raise RuntimeError("expected endpoint to include domain")
