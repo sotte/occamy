@@ -110,7 +110,7 @@ class Channel:
                 push_event.send()
             self._push_buffer = []
 
-    def _join_timeout():
+    def _join_timeout(self):
         with self._lock:
             if self._state != Channel.STATES['joining']:
                 return
