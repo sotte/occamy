@@ -2,6 +2,7 @@ import logging
 from threading import Lock, Timer
 from push import Push
 
+
 class Channel:
     STATES = dict(closed = "closed",
                   errored = "errored",
@@ -93,7 +94,7 @@ class Channel:
 
     def topic(self):
         return self._topic
-    
+
     def _rejoin_until_connected(self):
         with self._lock:
             if self._socket.is_connected():
@@ -143,7 +144,6 @@ class Channel:
         bindings = filter(lambda binding: binding['event'] == event, self._bindings)
         for binding in bindings:
             binding['callback'](payload, ref)
-        
+
     def reply_event_name(self, ref):
         return "chan_reply_{ref}".format(ref=ref)
-        
